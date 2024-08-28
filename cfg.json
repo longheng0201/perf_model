@@ -1,0 +1,25 @@
+{
+  "band": [
+    { 
+      "type": "ic16oc16_w16_as",
+      "tcube_w": 16,
+      "tcube_h": 1,
+      "tcube_ic": 16,
+      "tcube_oc": 16,
+      "vcube_w": 16,
+      "vcube_h": 1,
+      "vcube_c": 16,
+      "tpo": 8,
+      "vpo": 1,
+      "inner_oc" : 8,
+      "vrf_tensor": 256,
+      "vrf_vector": 256,
+      "vector_vrf": 32,
+      "wgt_tensor": 64,
+      "tensor_vrf": 64
+    },
+    // { 
+    //   "type": "ic32oc32_w32",
+    // }
+  ]
+}

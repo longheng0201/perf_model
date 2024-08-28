@@ -1,0 +1,27 @@
+{ 
+  "comments" : 
+  [  
+    { "comment": "unit:KB vrf=4kB l0=64k*4(r)*4(core)*4cluster;l1 1M*16 l2 4M*4 ,ddr:16G, GB/S   first try fm into l0 , then l1 ; wgt priority < fm "
+
+    } 
+  ],
+"mem": 
+  [
+    { 
+      "type": "set_s",
+      "vrf_size": 4,
+      "l0_size": 64,
+      "risc_num": 4, 
+      "l1_size": 1024,
+      "core_num": 4,
+      "l2_size": 4096,
+      "cluster_num": 4,
+      "ddr_size": 16000000,
+      "l0_band": 256,  
+      "l1_band": 512,
+      "l2_band": 128,
+      "ddr_band": 64
+    }
+     
+  ]
+}

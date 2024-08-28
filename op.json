@@ -1,0 +1,26 @@
+{
+  "operators": [
+    {
+      "type": ["ADD","MUL","SUB","DIV","MAX","MIN","EQ","NE","LT","LE","GT","GE","RSQRT"],
+      "req_band":   "vcube_w*vcube_h*vcube_c*2",  
+      "tensor_y" : 0,
+      "cnt"     : "ow*oh*oc",
+      "para"     : "oc",
+      "wgt_rd_times" : "oc*ceil(ow*oh/vpo/vcube_w/vcube_h)",
+      "fm_rd_times"   : " 2*vcube_c * ceil (oc /vcube_c) * ceil(ow * oh / vpo/vcube_w/vcube_h) * vcube_w*vcube_h*vpo",
+      "fm_wr_times"   : " 2*vcube_c * ceil (oc /vcube_c) * ceil(ow * oh / vpo/vcube_w/vcube_h) * vcube_w*vcube_h*vpo",
+      "formula" : "ceil(ow/vcube_w)*ceil(oh/vcube_h)*ceil(oc/vcube_c)"
+    },
+    // {
+    //   "type": ["CONV_2D","GEMM","CONV"],
+    //   "req_band" : "tcube_w*tcube_h*tcube_ic*kw*kh",   
+    //   "tensor_y" : 1,
+    //   "cnt"     : "ow*oh*ic*oc*kw*kh",
+    //   "para"     : 
+    //   "wgt_rd_times"   : 
+    //   "fm_rd_times" : 
+    //   "fm_wr_times" : 
+    //   "formula" : 
+    // }
+  ]
+}

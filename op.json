@@ -1,6 +1,17 @@
 {
   "operators": [
     {
+      "type": ["CONV_2D","GEMM","CONV","QLINEARMATMUL","FULLY_CONNECTED","CONV_3D","CONV_3D_TRANSPOSE","BATCH_MATMUL","TRANSPOSE_CONV","CONV_TRANSPOSE"],
+      "req_band" : "tcube_w*tcube_h*tcube_ic*kw*kh",   
+      "tensor_y" : 1,
+      "cnt"     : "ow*oh*ic*oc*kw*kh",
+      "para"     : "ceil(ic/tcube_ic)*ceil(oc/tcube_oc)*kw*kh*tcube_ic*tcube_oc",
+      "wgt_rd_times"   : "kw*kh*inner_oc * tcube_oc * tcube_ic * ceil (ic /tcube_ic) * ceil(ow * oh / tpo/tcube_w/tcube_h) * ceil(oc /(inner_oc* tcube_oc))",
+      "fm_rd_times" : "tcube_ic * tpo*tcube_w*tcube_h * ceil(ic / tcube_ic) * ceil(ow *oh /tpo/tcube_w/tcube_h) * ceil(oc / (inner_oc* tcube_oc))",
+      "fm_wr_times" : "tcube_oc * tpo*tcube_w*tcube_h * ceil(oc / tcube_oc) * ceil(ow *oh /tpo/tcube_w/tcube_h) * ceil(oc / (inner_oc* tcube_oc))",
+      "formula" : "kw*kh*ceil(ow/tcube_w)*ceil(oh/tcube_h)*ceil(oc/tcube_oc)*ceil(ic/tcube_ic)"
+    },
+    {
       "type": ["ADD","MUL","SUB","DIV","MAX","MIN","EQ","NE","LT","LE","GT","GE","RSQRT"],
       "req_band":   "vcube_w*vcube_h*vcube_c*2",  
       "tensor_y" : 0,
@@ -11,16 +22,93 @@
       "fm_wr_times"   : " 2*vcube_c * ceil (oc /vcube_c) * ceil(ow * oh / vpo/vcube_w/vcube_h) * vcube_w*vcube_h*vpo",
       "formula" : "ceil(ow/vcube_w)*ceil(oh/vcube_h)*ceil(oc/vcube_c)"
     },
-    // {
-    //   "type": ["CONV_2D","GEMM","CONV"],
-    //   "req_band" : "tcube_w*tcube_h*tcube_ic*kw*kh",   
-    //   "tensor_y" : 1,
-    //   "cnt"     : "ow*oh*ic*oc*kw*kh",
-    //   "para"     : 
-    //   "wgt_rd_times"   : 
-    //   "fm_rd_times" : 
-    //   "fm_wr_times" : 
-    //   "formula" : 
-    // }
+    {
+      "type": ["POW"],
+      "req_band": "vcube_w*vcube_h*vcube_c*2",  
+      "tensor_y" : 0,
+      "cnt"     : "ow*oh*oc",
+      "para"     : "oc",
+      "wgt_rd_times" : "oc*ceil(ow*oh/vpo/vcube_w/vcube_h)",
+      "fm_rd_times"   : " 2*vcube_c * ceil (oc /vcube_c) * ceil(ow * oh / vpo/vcube_w/vcube_h) * vcube_w*vcube_h*vpo",
+      "fm_wr_times"   : " 2*vcube_c * ceil (oc /vcube_c) * ceil(ow * oh / vpo/vcube_w/vcube_h) * vcube_w*vcube_h*vpo",
+      "formula" : "ceil(ow/vcube_w)*ceil(oh/vcube_h)*ceil(oc/vcube_c)"
+    },
+    {
+      "type": ["AVERAGE_POOL_2D","L2_POOL_2D","MAX_POOL_2D","DEPTHWISE_CONV_2D"],
+      "req_band": "vcube_w*vcube_h*vcube_c*kw*kh",  
+      "tensor_y" : 0,
+      "cnt"     : "ow*oh*oc*kw*kh",
+      "para"     : "oc*kw*kh",
+      "wgt_rd_times" : "oc*ceil(ow*oh/vpo/vcube_w/vcube_h)",
+      "fm_rd_times"   : " vcube_c * ceil (oc /vcube_c) * ceil(ow * oh / vpo/vcube_w/vcube_h) * vcube_w*vcube_h*vpo",
+      "fm_wr_times"   : " vcube_c * ceil (oc /vcube_c) * ceil(ow * oh / vpo/vcube_w/vcube_h) * vcube_w*vcube_h*vpo",
+      "formula" : "ceil(ow/vcube_w)*ceil(oh/vcube_h)*ceil(oc/vcube_c)"
+    },
+    {
+      "type": ["CONCATENATION","RESHAPE","ROUND","QUANTIZE","PAD","DEPTH_TO_SPACE","SPACE_TO_DEPTH","DEQUANTIZE","TRANSPOSE"],
+      "req_band": "vcube_w*vcube_h*vcube_c",  
+      "tensor_y" : 0,
+      "cnt"     : "ow*oh*oc",
+      "para"     : "oc",
+      "wgt_rd_times" : "oc*ceil(ow*oh/vpo/vcube_w/vcube_h)",
+      "fm_rd_times"   : " vcube_c * ceil (oc /vcube_c) * ceil(ow * oh / vpo/vcube_w/vcube_h) * vcube_w*vcube_h*vpo",
+      "fm_wr_times"   : " vcube_c * ceil (oc /vcube_c) * ceil(ow * oh / vpo/vcube_w/vcube_h) * vcube_w*vcube_h*vpo",
+      "formula" : "ceil(ow/vcube_w)*ceil(oh/vcube_h)*ceil(oc/vcube_c)"
+    },
+    {
+      "type": ["SPLIT","SLICE","GATHER","PACK"],
+      "req_band": "vcube_w*vcube_h*vcube_c",  
+      "tensor_y" : 0,
+      "cnt"     : "ow*oh*oc",
+      "para"     : "oc",
+      "wgt_rd_times" : "oc*ceil(ow*oh/vpo/vcube_w/vcube_h)",
+      "fm_rd_times"   : "vcube_c*ceil(oc/vcube_c)*ceil(ow*oh/vpo/vcube_w/vcube_h)*vcube_w*vcube_h*vpo",
+      "fm_wr_times"   : "vcube_c*ceil(oc/vcube_c)*ceil(ow*oh/vpo/vcube_w/vcube_h)*vcube_w*vcube_h*vpo",
+      "formula" : "ceil(ow/vcube_w)*ceil(oh/vcube_h)*ceil(oc/vcube_c)"
+    },
+    {
+      "type": ["SOFTMAX"],
+      "req_band": "vcube_w*vcube_h*vcube_c*10",  
+      "tensor_y" : 0,
+      "cnt"     : "ow*oh*oc*10",
+      "para"     : "oc*10",
+      "wgt_rd_times" : "oc*ceil(ow*oh/vpo/vcube_w/vcube_h)",
+      "fm_rd_times"   : "vcube_c * ceil (oc /vcube_c) * ceil(ow * oh / vpo/vcube_w/vcube_h) * vcube_w*vcube_h*vpo",
+      "fm_wr_times"   : "vcube_c * ceil (oc /vcube_c) * ceil(ow * oh / vpo/vcube_w/vcube_h) * vcube_w*vcube_h*vpo",
+      "formula" : "ceil(ow/vcube_w)*ceil(oh/vcube_h)*ceil(oc/vcube_c)"
+    },
+    {
+      "type": ["SQUARED_DIFFERENCE"],
+      "req_band": "vcube_w*vcube_h*vcube_c*2",  
+      "tensor_y" : 0,
+      "cnt"     : "ow*oh*oc*2",
+      "para"     : "oc",
+      "wgt_rd_times" : "oc*ceil(ow*oh/vpo/vcube_w/vcube_h)",
+      "fm_rd_times"   : " vcube_c * ceil (oc /vcube_c) * ceil(ow * oh / vpo/vcube_w/vcube_h) * vcube_w*vcube_h*vpo",
+      "fm_wr_times"   : " vcube_c * ceil (oc /vcube_c) * ceil(ow * oh / vpo/vcube_w/vcube_h) * vcube_w*vcube_h*vpo",
+      "formula" : "ceil(ow/vcube_w)*ceil(oh/vcube_h)*ceil(oc/vcube_c)"
+    },
+    {
+      "type": ["RELU","RELU6","SIGMOID","TANH","LEAKY_RELU","ELU","ELU6","TANH6","SIGMOID6","LEAKY_RELU6"],
+      "req_band": "vcube_w*vcube_h*vcube_c",  
+      "tensor_y" : 0,
+      "cnt"     : "ow*oh*oc",
+      "para"     : "oc",
+      "wgt_rd_times" : "oc*ceil(ow*oh/vpo/vcube_w/vcube_h)",
+      "fm_rd_times"   : " vcube_c * ceil (oc /vcube_c) * ceil(ow * oh / vpo/vcube_w/vcube_h) * vcube_w*vcube_h*vpo",
+      "fm_wr_times"   : " vcube_c * ceil (oc /vcube_c) * ceil(ow * oh / vpo/vcube_w/vcube_h) * vcube_w*vcube_h*vpo",
+      "formula" : "ceil(ow/vcube_w)*ceil(oh/vcube_h)*ceil(oc/vcube_c)"
+    },
+    {
+      "type": "MEAN,Globalaveragepool",
+      "tensor_y" : 0,
+      "req_band": "vcube_w*vcube_h*vcube_c",  
+      "cnt"     : "iw*ih*ic",
+      "para"     : "oc",
+      "wgt_rd_times" : "oc*ceil(ow*oh/vpo/vcube_w/vcube_h)",
+      "fm_rd_times"   : " vcube_c * ceil (oc /vcube_c) * ceil(ow * oh / vpo/vcube_w/vcube_h) * vcube_w*vcube_h*vpo",
+      "fm_wr_times"   : " vcube_c * ceil (oc /vcube_c) * ceil(ow * oh / vpo/vcube_w/vcube_h) * vcube_w*vcube_h*vpo",
+      "formula" : "ceil(ow/vcube_w)*ceil(oh/vcube_h)*ceil(oc/vcube_c)"
+    }
   ]
 }
